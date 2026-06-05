@@ -1,0 +1,53 @@
+# For most projects, this workflow file will not be committed; you may customize it.
+# It uses CodeQL to analyze code for security vulnerabilities.
+# Learn more: https://docs.github.com/en/code-security/code-scanning
+
+name: "CodeQL Advanced"
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  schedule:
+    - cron: '0 0 * * 0'   # weekly scan every Sunday at midnight
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      packages: read
+      actions: read
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: go
+            build-mode: autobuild
+          # Add more languages if needed (e.g., javascript-typescript)
+          # - language: javascript-typescript
+          #   build-mode: none
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: ${{ matrix.language }}
+        build-mode: ${{ matrix.build-mode }}
+
+    - if: matrix.build-mode == 'manual'
+      run: |
+        # Add manual build commands here if required
+        echo 'Manual build not needed'
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
+      with:
+        category: "/language:${{matrix.language}}"
